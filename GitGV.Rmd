@@ -15,7 +15,11 @@ hello
 ```
 
 ```{r}
-read_csv
+library(janitor)
+
+dig <- read.csv("DIG.csv") %>%
+  janitor::clean_names()
+dig
 ```
 
 ```{r}
