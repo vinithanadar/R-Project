@@ -3,6 +3,7 @@ title: "GitGV"
 output: html_document
 ---
 ```{r}
+install.packages("dpylr")
 install.packages("shinydashboard")
 library(shinydashboard)
 library(ggplot2)
@@ -11,7 +12,7 @@ library(readr)
 ```
 
 ```{r}
-hello
+
 ```
 
 ```{r}
@@ -22,7 +23,80 @@ dig <- read.csv("DIG.csv") %>%
 dig
 ```
 
+Age and Sex comparsion:
+
 ```{r}
-Gokul working on it
+#Age an sex Comparision
+
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(janitor)
+
+dig <- read_csv("DIG.csv") %>%
+  janitor::clean_names()
+
+ui <- dashboardPage(
+  dashboardHeader(title = "DIG COMPARISON"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Age and Sex comparison", tabName = "comparison", icon = icon("users"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "comparison",
+        fluidRow(
+          box(width = 6, title = "Age distribution by sex",status = "primary",
+              plotOutput("age_sex_plot")),
+          
+          box(width = 6 , title = "Summary table", status = "info",
+              tableOutput("sex_age_summary"))
+        )
+      )
+    )
+  ) 
+)
+
+# --server--
+
+server <- function(input,output,session) {
+  
+  output$age_sex_plot <- renderPlot({
+    ggplot(dig, aes(x=age, fill = as.factor(sex))) +
+      geom_histogram(alpha = 0.6 , bins = 30 , position = "identity") +
+      labs(
+        x = "Age",
+        y = "Count",
+        fill = "Sex",
+        title = "Distribution of Age by sex"
+      ) +
+      theme_minimal()
+  })
+  
+  output$sex_age_summary <- renderTable({
+    dig %>%
+      group_by(sex) %>%
+      summarise(
+        count = n(),
+        mean_age = round(mean(age, na.rm = TRUE), 1),
+        median_age = median(age, na.rm = TRUE),
+        min_age = min(age, na.rm = TRUE),
+        max_age = max(age, na.rm = TRUE)
+      )
+  })
+}
+
+
+
+shinyApp(ui, server)
+
 ```
+Interpretation:
+
 
