@@ -23,10 +23,10 @@ dig <- read.csv("DIG.csv") %>%
 dig
 ```
 
-Age and Sex comparsion:
+Age vs Sex comparsion:
 
 ```{r}
-#Age an sex Comparision
+#Age vs sex Comparision
 
 library(shiny)
 library(shinydashboard)
@@ -94,8 +94,10 @@ server <- function(input,output,session) {
 
 
 
-shinyApp(ui, server)
+shinyApp(ui, server )
 
 ```
 
+Interpretation:
 
+ I loaded the  DIG.csv data and made all the columns as lowercase and I built a shiny dashboard ui to display the age vs sex comparison and the server generate the histogram of age and sex and i also added the summary  table for min,max,median,mean for age per sex.Finally this code runs an shinyapp() which will show the plots and table summary.. 
