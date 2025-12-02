@@ -101,5 +101,109 @@ shinyApp(ui, server )
 Interpretation:
 
  I loaded the  DIG.csv data and made all the columns as lowercase and I built a shiny dashboard ui to display the age vs sex comparison and the server generate the histogram of age and sex and i also added the summary  table for min,max,median,mean for age per sex.Finally this code runs an shinyapp() which will show the plots and table summary.
+ 
+ 
+ 
+ 
 
 Next question:
+
+
+
+AGE VS DIABETES:
+```{r}
+
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+dig <- read.csv("DIG.csv") %>%
+  janitor::clean_names()
+
+
+# --- mutating a another column for age categories(it will be better for pie chart)---
+
+dig_mut1 <- dig %>%
+  mutate(age_group =
+           case_when(
+             age < 50 ~ "Below 50"  ,
+             age >= 50 & age < 70  ~ "50-69",
+             age >= 70 ~ "70+" )
+           )
+
+
+ui <- dashboardPage(
+  dashboardHeader(title = "AGE vs DIABETES - pie chart"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Age  and diabetes", tabName = "age_diabetes" , icon = icon("pie-chart"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "age_diabetes" , 
+        
+        fluidRow(
+          box(
+            width = 6,  status = "primary", title = "Pie chart : Age Group vs Diabetes" ,
+            plotOutput("age_diabetes_pie")
+            
+          ),
+          
+          box( 
+            width = 6 , status = "info" , title = "Summary Table" , 
+            tableOutput("age_diabetes_table")
+          ),
+          
+        )
+      )
+    )
+  )
+  
+)
+
+server <- function(input , output , session) {
+  
+  output$age_diabetes_pie <- renderPlot({
+    
+    pie_data <- dig_mut1 %>%
+      group_by(age_group , diabetes) %>%
+      summarise(count = n()) %>%
+      ungroup()
+    
+    
+    ggplot(pie_data, aes(x = "", y = count, fill = interaction(age_group, diabetes))) +
+      geom_col(width = 1)+
+      coord_polar("y", start = 0)+
+      labs(
+        fill = "Age Group + Diabetes",
+        title = "Age Group vs Diabetes (Pie Chart)"
+      ) +
+      theme_void()
+  
+  })
+ 
+  
+  output$age_diabetes_table <- renderTable({
+    dig_mut1 %>%
+      group_by(age_group, diabetes) %>%
+      summarise(
+        count = n(),
+        mean_age = round(mean(age),1 )
+      )
+  })
+  
+   
+ }
+
+shinyApp(ui,server)
+
+
+
+```
+
