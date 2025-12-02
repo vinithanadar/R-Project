@@ -206,4 +206,7 @@ shinyApp(ui,server)
 
 
 ```
+Interpretation:
+
+ I mutated a data frame called "dig_mut1" for better visualization diabetes age in pie chart and and I built a shiny dashboard code to represent the age and diabetes of the patient  and I created a server page  consisting of pie-chart visualization of the data and I made summary table for better understanding of age groups,so This code will show the age vs diabetes pie-chart visualization and a summary table ..
 
