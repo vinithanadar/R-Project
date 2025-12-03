@@ -448,3 +448,87 @@ With a similar code for the age vs race, I included a boxplot for the visualisat
 names(dig)
 ```
 
+
+Next Question:
+
+ID vs NHOSP(number of hospitalisation):
+
+```{r}
+
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+dig
+
+ui <- dashboardPage(
+  dashboardHeader(title = "ID vs NHOSP"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("ID and Hospitalisation", tabName = "id_hosp", icon = icon("hospital"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "id_hosp",
+        
+        fluidRow(
+          box(
+            width = 6, status = "primary", solidHeader = TRUE,
+            title = "Histogram : Number of Hospitalisations",
+            plotOutput("hosp_hist")
+          ),
+          
+          box(
+            width = 6 , status = "info", solidHeader = TRUE,
+            title = "Summary of NHOSP",
+            tableOutput("hosp_summary")
+          )
+        )
+      )
+    )
+  )
+  
+ )
+
+
+
+
+server <- function (input, output, session) {
+  
+  output$hosp_hist <- renderPlot({
+    ggplot(dig, aes(x= nhosp)) +
+      geom_histogram(fill = "red", color = "grey",bins = 20, alpha = 0.7)+
+      labs(
+        title = "Distribution of Number of hospitalisations",
+        x = "NSHOP(Number of Hospitalisations)",
+        y = "count of patients"
+      ) +
+      theme_minimal()
+    
+  })
+  
+  output$hosp_summary <- renderTable({
+    dig %>%
+      summarise(
+        total_patients = n(),
+        mean_hosp = round(mean(nhosp, na.rm = TRUE),1 ),
+        median_hosp = median(nhosp, na.rm = TRUE),
+        min_hosp = min(nhosp, na.rm = TRUE),
+        max_hosp = max(nhosp,na.rm = TRUE)
+      )
+  })
+  
+  
+}
+
+shinyApp(ui,server)
+
+```
+
