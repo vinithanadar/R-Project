@@ -282,7 +282,11 @@ server <- function(input , output, session) {
 
 
 shinyApp(ui, server)
+
 ```
+ Interpretation:
+ 
+  I took that mutated data frame ("dig_mut1") as my dataset because I added a column for better age visualization  and I built a code for Age vs Hypertension(history of hypertension) and code is similar to my last code (age vs diabetes) .In this code i added an extra column in summary table (percent of hypertension cases from the age groups), the code will show that pie chart of age vs hypertension and a summary table with data of the pie chart..
  
  
  
