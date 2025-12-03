@@ -462,7 +462,6 @@ library(dplyr)
 library(readr)
 library(janitor)
 
-dig
 
 ui <- dashboardPage(
   dashboardHeader(title = "ID vs NHOSP"),
@@ -531,4 +530,7 @@ server <- function (input, output, session) {
 shinyApp(ui,server)
 
 ```
+Interpretation:
+
+I took datas of ID and NHOSP(number of hospitalization) and I made a shiny dash board code and it represents the patient id and number of hospitalizations and this code  will show the histogram of ID and NHOSP and i added the summary table of this data . It will show the  total patients, (mean,median,max,min)of hospitalizations .
 
