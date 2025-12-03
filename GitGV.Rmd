@@ -215,5 +215,75 @@ Interpretation:
  
  Age vs Hypertension:
  
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(janitor)
+
+dig_mut1
+
+ui <- dashboardPage(
+  dashboardHeader(title = "Hypertension vs Age - Pie Chart"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Age vs Hypertension(Pie Chart)", tabName = "hypertension_age", icon = icon("pie-chart"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "hypertension_age",
+        
+        fluidRow(
+          box(width = 6 , title = "hypertension ditribution from Age Group",
+              status = "primary", plotOutput("pie_chart")) , 
+          
+          box(width = 6 , title = "Summary table",
+              status = "info", tableOutput("pie_summary"))
+          
+        )
+      )
+    )
+  )
+  
+)
+
+
+server <- function(input , output, session) {
+  
+  output$pie_chart <- renderPlot({
+    
+    pie_data <- dig_mut1 %>%
+      group_by(age_group) %>%
+      summarise(hypertension_count = sum (hyperten == 1, na.rm = TRUE))
+    
+    ggplot(pie_data, aes( x = "", y = hypertension_count, fill = age_group)) +
+      geom_col(width = 1) +
+      coord_polar(theta = "y") +
+      labs(title = "Hypertension cases by Age Group", fill = "Age Group") +
+      theme_void()
+  })
+  
+  output$pie_summary <- renderTable({
+    
+    dig_mut1 %>%
+      group_by(age_group) %>%
+      summarise(
+        total = n(),
+        hypertension_cases = sum(hyperten == 1, na.rm = TRUE),
+        hypertension_percent = round(hypertension_cases/ total *100,1)
+      )
+  }) 
+  
+}
+
+
+shinyApp(ui, server)
+```
+ 
+ 
  
 
