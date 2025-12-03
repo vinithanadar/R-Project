@@ -709,3 +709,40 @@ shinyApp(ui=ui, server= server)
 ```
 Interpretation:
 Firstly I have cleaned the dataset and then grouped it by treatment (trtmt= 0 vs 1). For each of this group , calculated the number of patients, number of deaths and the death rate. Plotting this death rates as a bar chart for easy comparison of the results of the trail.The results show very similar death rate in both the groups ~35% siggestive of no large mortality difference between the treatment groups in the dataset.
+
+Creating a shinydashboard
+```{r}
+library(shiny)
+library(shinydashboard)
+
+#adding a dashboard to the app
+ui <- dashboardPage(
+  dashboardHeader(title = "DIG dashboard"),
+  dashboardSidebar(
+    sidebarMenu(                #trying to make one using any 2 comparative analysis
+      menuItem("Age vs Race",       tabName = "age_race",icon=icon("users")),
+      menuItem("Treatment vs Death", tabName = "trt_death",icon = icon("heart-pulse"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "age_race",
+        h2("Age vs Race page")
+      ),
+      tabItem(
+        tabName = "trt_death",
+        h2("Treatment vs Death page")
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui=ui ,server=server)
+```
+Comment:
+I created a simple Shiny dashboard layout with a header, a sidebar menu and two of the empty content tabs that can be filled. I have used the server function which is currently empty, so no outputs are generated so far, it simply connects the UI and allows the app to run without errors.
