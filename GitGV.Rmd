@@ -613,4 +613,6 @@ server <- function(input, output, session){
 shinyApp(ui,server)
 
 ```
+Interpretation:
 
+I took the data of Heart rate (HEARTRTE) and coronary revascularization (CREV) as my data. and I build a shiny dashboard code for this two data and I made a boxplot of representing each HEARTRTE and CREV  and i also added the  summary table mentioning the count, crev, mean, median, max, min of the data to visualize the data clearly..so this code will show the crev status (yes =1 ,no =0) and heart rate (beats/min) in a boxplot and a summary table of the data
