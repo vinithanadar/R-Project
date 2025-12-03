@@ -368,7 +368,7 @@ Interpretation:
 In this analysis, I used the DIG dataset where the age distributions are quite higher and similar to the race groups.
 From both the race categories, the mean ages has been lying in the mid 60s with similar median and ranges, which is suggesting that all the patients from the different racial group enrolled in the study at a age that was comparable between each other.Although there are many patients in Race 1 than in Race group 2, the appearance of the histograms and the summary statistics had no major age imbalance between the races.
 
-Comparing Weight and Blood group of the DIG dataset
+Comparing BMI and Race of the DIG dataset
 ```{r}
 library(shiny)
 library(shinydashboard)
@@ -616,3 +616,96 @@ shinyApp(ui,server)
 Interpretation:
 
 I took the data of Heart rate (HEARTRTE) and coronary revascularization (CREV) as my data. and I build a shiny dashboard code for this two data and I made a boxplot of representing each HEARTRTE and CREV  and i also added the  summary table mentioning the count, crev, mean, median, max, min of the data to visualize the data clearly..so this code will show the crev status (yes =1 ,no =0) and heart rate (beats/min) in a boxplot and a summary table of the data
+
+Proportion of Treatment vs Death
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+library(scales)
+
+#Cleaning the dataset 
+dig<- read.csv("DIG.csv") %>%
+  clean_names()
+
+ui <- dashboardPage(
+  dashboardHeader(title = "DIG:Treatment vs Death"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Treatment vs Death", tabName = "trt_death", icon = icon("heart-pulse"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "trt_death",
+        
+        fluidRow(
+          box(
+            width = 6, status = "primary",
+            title = "Death Rate by Treatment",
+            plotOutput("trt_death_bar")
+          ),
+          
+          box(
+            width = 6, status = "info",
+            title = "Summary: death by treatment",
+            tableOutput("trt_death_summary")
+          )
+        )
+      )
+    )
+  )
+
+)
+
+server <- function(input, output, session){
+  
+  output$trt_death_bar <- renderPlot({
+    sum_data <- dig %>%
+      group_by(trtmt) %>%
+      summarise(
+        n=n(),
+        deaths= sum(death == 1, na.rm = TRUE),
+        death_rt= deaths/n,
+        .groups="drop"
+      )
+print(sum_data)
+      #adding a plot for easy visualisation
+ggplot(data=sum_data,
+       mapping=aes(x=factor(trtmt),
+                   y=death_rt,
+                   fill = factor(trtmt)))+
+      geom_col() +
+      ylim(0,0.5)+
+      labs(
+        x="Treatment group",
+        y="Death rate",
+        fill= "Treatment",
+        title= "Proportion of deaths by treatment"
+      )+
+      theme_minimal()
+  })
+#summarising the data in a table
+  output$trt_death_summary <- renderTable({
+    dig %>%
+      group_by(trtmt) %>%
+      summarise(
+        n=n(),
+        deaths= sum(death==1, na.rm=TRUE),
+        death_rt = round(100* deaths/n,1),
+        .groups = "drop"
+      )
+  })
+}
+
+shinyApp(ui=ui, server= server)
+
+```
+Interpretation:
+Firstly I have cleaned the dataset and then grouped it by treatment (trtmt= 0 vs 1). For each of this group , calculated the number of patients, number of deaths and the death rate. Plotting this death rates as a bar chart for easy comparison of the results of the trail.The results show very similar death rate in both the groups ~35% siggestive of no large mortality difference between the treatment groups in the dataset.
