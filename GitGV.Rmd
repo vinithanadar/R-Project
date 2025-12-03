@@ -288,6 +288,82 @@ shinyApp(ui, server)
  
   I took that mutated data frame ("dig_mut1") as my dataset because I added a column for better age visualization  and I built a code for Age vs Hypertension(history of hypertension) and code is similar to my last code (age vs diabetes) .In this code i added an extra column in summary table (percent of hypertension cases from the age groups), the code will show that pie chart of age vs hypertension and a summary table with data of the pie chart..
  
- 
- 
+Age vs Race
+```{r}
+#Comparison of Age with Race
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(janitor)
 
+#Gathering the data
+dig <- read.csv("DIG.csv")%>%
+  clean_names()
+
+ui<- dashboardPage(
+  dashboardHeader(title = "DIG: Age vs Race"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Age vs Race", tabName ="Age_and_Race", icon= icon("users")))),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName= "Age_and_Race",
+        fluidRow(
+          box(
+            width=6,
+            title= "Age distribution by Race data",
+            status= "primary",
+          plotOutput("age_vs_race_plot")),
+          box(
+            width=6,
+            title = "Summarising age by race data",
+            status="info",
+          tableOutput("summarising_age_vs_race")
+          )
+          )
+        )
+      )
+    )
+  )
+
+server<- function(input, output, session) {
+  
+  #plotting a histogram to visualise the data
+  output$age_vs_race_plot <- renderPlot({
+    ggplot(dig, aes(x= age, fill = factor(race)))+
+      geom_histogram(
+        bins= 30,
+        position = "identity",
+        alpha= 0.8
+      )+
+      labs(
+        x= "Age(years)",
+        y= "Number of patients",
+        fill= "Race",
+        title = "Distribution of age by race")+
+      theme_minimal()
+  })
+  
+#summarising the age table by race
+  output$summarising_age_vs_race <- renderTable({
+    dig %>%
+      group_by(race) %>%
+      summarise(
+        n = n(),
+        mean_age = round(mean(age, na.rm = TRUE),1),
+        median= median(age, na.rm = TRUE),
+        min_age = min(age, na.rm = TRUE),
+        max_age = max(age, na.rm = TRUE),
+        .groups = "drop"
+      )
+  })
+}
+
+shinyApp(ui=ui,server = server)
+```
+Interpretation:
+In this analysis, I used the DIG dataset where the age distributions are quite higher and similar to the race groups.
+From both the race categories, the mean ages has been lying in the mid 60s with similar median and ranges, which is suggesting that all the patients from the different racial group enrolled in the study at a age that was comparable between each other.Although there are many patients in Race 1 than in Race group 2, the appearance of the histograms and the summary statistics had no major age imbalance between the races.
