@@ -534,3 +534,83 @@ Interpretation:
 
 I took datas of ID and NHOSP(number of hospitalization) and I made a shiny dash board code and it represents the patient id and number of hospitalizations and this code  will show the histogram of ID and NHOSP and i added the summary table of this data . It will show the  total patients, (mean,median,max,min)of hospitalizations .
 
+
+
+Next question:
+
+HEARTRTE(heart rate) vs CREV(coronary Revascularization):
+
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+ui <- dashboardPage(
+  dashboardHeader(title = "Heart Rate vs coronary Revascularization"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("HEARTRTE VS CREV", tabName = "hr_crev", icon = icon("heartbeat"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "hr_crev",
+        
+        fluidRow(
+          box(
+            width = 6, status = "primary", solidHeader = TRUE,
+            title = "Boxplot : Heart Rate by CREV status",
+            plotOutput("hr_crev_plot")
+          ),
+          
+          box(
+            width = 6, status = "info", solidHeader = TRUE,
+            title = "Summary Table",
+            tableOutput("hr_crev_summary")
+          )
+        )
+      )
+    )
+  )
+
+)
+
+server <- function(input, output, session){
+  
+  output$hr_crev_plot <- renderPlot({
+    ggplot(dig, aes(x = as.factor(crev), y = heartrte, fill = as.factor(crev))) +
+      geom_boxplot(alpha = 0.7) +
+      labs(
+        x = "CREV Status(0= no, 1 = yes )",
+        y = "Heart rate(beats/min)",
+        fill = "CREV",
+        title = "Heart Rate Distribution by Coronary Revascularization"
+      ) +
+      theme_minimal()
+  })
+  
+  output$hr_crev_summary <- renderTable({
+    dig%>%
+      group_by(crev) %>%
+      summarise(
+        count = n(),
+        mean_hr = round(mean(heartrte, na.rm = TRUE),1 ),
+        median_hr = median(heartrte, na.rm = TRUE),
+        min_hr = min(heartrte, na.rm = TRUE),
+        max_hr = max(heartrte, na.rm = TRUE)
+      )
+  })
+ 
+}
+
+
+shinyApp(ui,server)
+
+```
+
