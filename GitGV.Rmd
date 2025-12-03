@@ -367,3 +367,84 @@ shinyApp(ui=ui,server = server)
 Interpretation:
 In this analysis, I used the DIG dataset where the age distributions are quite higher and similar to the race groups.
 From both the race categories, the mean ages has been lying in the mid 60s with similar median and ranges, which is suggesting that all the patients from the different racial group enrolled in the study at a age that was comparable between each other.Although there are many patients in Race 1 than in Race group 2, the appearance of the histograms and the summary statistics had no major age imbalance between the races.
+
+Comparing Weight and Blood group of the DIG dataset
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(janitor)
+
+#Cleaning the dataset 
+dig<- read.csv("DIG.csv") %>%
+  clean_names()
+
+ui <- dashboardPage(
+  dashboardHeader(title=" DIG:BMI and Race"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("BMI vs Race",
+               tabName = "bmi_race",
+               icon= icon("user"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "bmi_race",
+        fluidRow(
+          box(
+            width=6,
+            status = "primary",
+            title= "Summary of BMI by race",
+            plotOutput("bmi_race_box")),
+          box(width = 6, status="info", title = "Summary of BMI by race",
+              tableOutput("bmi_race_summary")
+          )
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output,session) {
+  
+  #plotting a boxplot to visualise the data for each race group
+  output$bmi_race_box <-renderPlot({
+    ggplot(dig,aes(x=factor(race),y= bmi,fill=factor(race)))+
+      geom_boxplot(alpha=0.7, outlier.alpha = 0.6)+
+      labs(
+        x="Race",
+        y="BMI",
+        fill="Race",
+        title = "Distribution of BMI by race"
+      )+
+      theme_minimal()
+  })
+  
+  #summarising in a table
+  output$bmi_race_summary <- renderTable ({
+    dig %>%
+      group_by(race) %>%
+      summarise(
+        n=n(),
+        mean_bmi = round(mean(bmi, na.rm= TRUE),1),
+        median= median(bmi,na.rm = TRUE),
+        min_bmi= min(bmi, na.rm = TRUE),
+        max_bmi= max(bmi, na.rm=TRUE),
+        .groups= "drop"
+      )
+  })
+}
+
+shinyApp(ui=ui,server= server)
+```
+Interpretation:
+With a similar code for the age vs race, I included a boxplot for the visualisation of bmi vs race. From the analysis done above, the BMI is very similar across both the racial groups of the trail, Both the groups have mean BMIs around 27 and almost similar medians, while the boxplot shows overlapping inter-quartile ranges and overall spread. Group 1 has many more patients than group 2 but their BMI distributions are shaped similar, with a same minimum and maximum values.Overall, there is no clear evidence of major difference in the BMI between the two racial categories in the dataset.
+
+```{r}
+names(dig)
+```
+
