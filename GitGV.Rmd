@@ -1288,5 +1288,6 @@ server <- function(input, output, session) {
 
 shinyApp(ui,server)
 ```
-
+Interpretation:
+I build a shinydashboard code for WHF(worsening of heart failure) vs Medical Parameters of(Systolic bp ,Diastolic bp, heart rate).. this code  represents the measurements between the WHF and medical parameters..I created a box plot for all the comparisons and made an summary table for each parameters (min,max,mean)values for yes (or) no . [0-no, 1-yes]..we can see the values for heart failure changing  the values in other bp values, by this we can identify the patients who are worsening their heart health..
 
