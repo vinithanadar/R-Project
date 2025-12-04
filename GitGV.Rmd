@@ -746,3 +746,87 @@ shinyApp(ui=ui ,server=server)
 ```
 Comment:
 I created a simple Shiny dashboard layout with a header, a sidebar menu and two of the empty content tabs that can be filled. I have used the server function which is currently empty, so no outputs are generated so far, it simply connects the UI and allows the app to run without errors.
+
+Comparison of BMI with Diabetes Mellitus(DM)
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+#Loading the data
+dig <- read.csv("DIG.csv") %>%
+  clean_names()
+
+ui<- dashboardPage(
+  dashboardHeader(title= "DIG:BMI vs Diabetes Mellitus"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("BMI vs Diabetes",
+               tabName = "bmi_diab",
+               icon= icon("stethoscope"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "bmi_diab",
+        fluidRow(
+          box(
+            widtg=6, status = "primary",
+            title= "BMI by Diabetes status",
+            plotOutput("bmi_diab_plot")
+          ),
+          box(
+            width=6, status = "info",
+            title = "Summary: BMI by diabetes status",
+            tableOutput("bmi_diab_summary")
+          )
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output,session){
+  
+  #creating a distributuion plot of BMI by diabetes
+  output$bmi_diab_plot <- renderPlot({
+    ggplot(
+      data=dig,
+      mapping = aes(x=factor(diabetes),y=bmi,fill=factor(diabetes))
+    )+
+      geom_violin(trim = FALSE, alpha=0.7)+
+      geom_jitter(width = 0.1, alpha=0.15, size= 0.8)+
+      labs(
+        x="Diabetes(0=no, 1=yes)",
+        y="BMI",
+        fill="Diabetes",
+        title = "BMI distribution by diabetes status"
+      )+
+      theme_minimal()
+  })
+  
+  #summarising the table of BMI comparsion with diabetes
+  output$bmi_diab_summary <- renderTable({
+    dig %>%
+      group_by(diabetes) %>%
+      summarise(
+        n=n(),
+        mean_bmi=round(mean(bmi, na.rm=TRUE),1),
+        median= median(bmi,na.rm = TRUE),
+        min_bmi=min(bmi, na.rm=TRUE),
+        max_bmi= max(bmi, na.rm = TRUE),
+        .groups = "drop"
+      )
+  })
+  
+}
+
+shinyApp(ui=ui,server=server)
+```
+Interpretation:
+I have created a violin plot to visualise the comparison of BMI vs Diabetes by initially cleaning the data. After the analysis (summarised in the table), the mean BMI is almost the same in both the treatment groups and the median of both is also almost similar.
+Most importantly the patients with or without diabetes have very similar BMI distributions, thus BMI does not differ mucb by the presence or absence of diabetes in the DIF trail dataset.
