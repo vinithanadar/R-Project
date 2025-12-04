@@ -1145,3 +1145,148 @@ The analysis shows that the primary baselines continuous variable that is the SB
 For doing the above a built a shiny dashboard tab where the user can choose a variable of choice and see the distribution by treatment as a density plot along with a summary table using summary statistics. I have also included a reactive expression to select and rename the variable of choice, then the libraries like ggplot2 and dplyr were used to draw the faceted densities and compute the group-wise summary statistics.
 
 Next question:
+
+
+WHF(worsening heart failure) vs Diastolic BP, Systolic BP, Heart Rate..
+
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+
+
+dig <- read.csv("DIG.csv") %>%
+  janitor::clean_names()
+
+
+
+
+ui <- dashboardPage(
+  dashboardHeader(title = "WHF vs Clinical parameters"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("WHF Comparisions",
+               tabName = "whf_compare",
+               icon = icon("heartbeat"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "whf_compare",
+        
+        fluidRow(
+          box(width = 4, status = "primary", solidHeader = TRUE,
+              title = "WHF vs Heart Rate",
+              plotOutput("whf_hr_plot")),
+          
+          box(width = 4, status = "success", solidHeader = TRUE,
+              title = "WHF vs Diastolic BP ",
+              plotOutput("whf_diabp_plot")),
+          
+          box(width = 4, status = "info", solidHeader = TRUE,
+              title = "WHF vs Systolic BP",
+              plotOutput("whf_sysbp_plot"))
+          
+          
+          
+        ),
+        
+        fluidRow(
+          box(width = 12, status = "warning", solidHeader = TRUE,
+              title = "summary Table (WHF vs Parameters)",
+              tableOutput("whf_summary"))
+        )
+        
+        
+        
+        
+        
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  output$whf_hr_plot <- renderPlot({
+    ggplot(dig, aes(x = factor(whf) , y = heartrte , fill = factor(whf))) +
+      geom_boxplot(alpha = 0.8) +
+      labs(
+        title = "Heart Rate by WHF Status",
+        x = "WHF( 0 = No, 1 = Yes)",
+        y = "Heart Rate (beats/min)",
+        fill = "WHF"
+      )+
+      theme_minimal()
+      
+      
+  })
+  
+  output$whf_diabp_plot <- renderPlot({
+    ggplot(dig,aes(x = factor(whf), y = diabp, fill = factor(whf)))+
+      geom_boxplot(alpha = 0.8) +
+      labs(
+        title = "Diastolic Blood Pressure by WHF Status",
+        x = "WHF (0 = No , 1 = Yes)",
+        y = "Diastolic Bp(mmHg)",
+        fill = "WHF"
+      )+
+      theme_minimal()
+  })
+  
+  
+  output$whf_sysbp_plot <- renderPlot({
+    ggplot(dig, aes(x = factor(whf),y = sysbp, fill = factor(whf))) +
+      geom_boxplot(alpha  = 0.8) +
+      labs(
+        title = "Systolic Blood Pressure by WHF Status",
+        x = "WHF (0= No, 1 = Yes)",
+        y = "Systolic BP(mmHg)",
+        fill = "WHF"
+      )+
+      theme_minimal()
+  })
+  
+  
+  output$whf_summary <- renderTable({
+    dig%>%
+      group_by(whf) %>%
+      summarise(
+        n = n(),
+        mean_heartrte = round(mean(heartrte, na.rm = TRUE),1),
+        mean_diabp = round(mean(diabp, na.rm = TRUE),1),
+        mean_sysbp = round(mean(sysbp, na.rm = TRUE),1),
+        
+        
+        
+        median_heartrte = median(heartrte, na.rm = TRUE),
+        median_diabp =median(diabp, na.rm = TRUE),
+        median_sysbp = median(sysbp, na.rm = TRUE),
+        
+        
+        min_heartrte = min(heartrte, na.rm = TRUE),
+        max_heartrte = max(heartrte, na.rm = TRUE),
+        
+        min_diabp = min(diabp, na.rm = TRUE),
+        max_diabp = max(diabp, na.rm = TRUE),
+        
+        min_sysbp = min(sysbp, na.rm = TRUE),
+        max_sysbp = max(sysbp, na.rm = TRUE)
+      )
+  })
+  
+  
+}
+
+
+shinyApp(ui,server)
+```
+
+
