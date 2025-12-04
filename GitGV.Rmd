@@ -1031,7 +1031,8 @@ server <- function(input, output, session){
 shinyApp(ui, server)
 
 ```
-
+Interpretation:
+ I made a shiny dashboard code representing the Treatment group vs Age,Sex,Race and it made an error at first because of column names and i cleared the error and this code will show Age vs Treatment in boxplot and sex vs treatment code and race vs treatment code in bar graphs.I differed the treatment vs age as [1= Placebo,0= Digoxin], and treatment vs sex as[1- Male, 2-Female] and race as [1-White ,2- Non -white] .. I didnt use summary table for this code because the graph mentions the data clearly. i combined three data from previous code and made combined them to see the code is working properly..
 
 ```{r}
 names(dig)
