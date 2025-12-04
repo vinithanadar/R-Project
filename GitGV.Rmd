@@ -919,4 +919,7 @@ server <- function(input, output, session) {
 
 shinyApp(ui=ui,server=server)
 ```
-
+Interpretation
+According to the data visualisation the events of whf were more common in placebo than than the digoxin treatment group.
+For MI; the event rates are quite low and much similar in both the groups
+Lastly in case of stroke, the events were low and almost equal in both the groups.
