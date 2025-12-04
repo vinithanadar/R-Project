@@ -830,3 +830,93 @@ shinyApp(ui=ui,server=server)
 Interpretation:
 I have created a violin plot to visualise the comparison of BMI vs Diabetes by initially cleaning the data. After the analysis (summarised in the table), the mean BMI is almost the same in both the treatment groups and the median of both is also almost similar.
 Most importantly the patients with or without diabetes have very similar BMI distributions, thus BMI does not differ mucb by the presence or absence of diabetes in the DIF trail dataset.
+
+
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+#Loading of the data
+dig <- read.csv("DIG.csv") %>%
+  clean_names()
+
+ui<- dashboardPage(
+  dashboardHeader(title = "DIG Trail Treatment Comparisons"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Treatment vs Outcome",
+               tabName = "trt_outcome",
+               icon = icon("exchange-alt")))),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "trt_outcome",
+        fluidRow(
+          box(
+            width = 4, status = "warning",
+            title = "Choose outcome",
+            selectInput(
+              inputId = "outcome_var",
+              label = "Outcome variable:",
+              choices = c("Worsening HF(whf)"="whf",
+                          "Myocardial infarction(mi)"="mi",
+                          "Stroke(strk)"="strk"
+              ),
+              selected="whf")),
+          box(
+            width = 8, status = "primary",
+            title = "Event Occurence by Treatment",
+            plotOutput("trt_outcome_plot"))),
+        fluidRow(
+          box(
+            width = 12, status = "info",
+            title= "Summary by treatment",
+            tableOutput("trt_outcome_summary")
+          )
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  #computing the counts for the desirable outcome wanted
+  summary_data <- reactive({
+    out<- sym(input$outcome_var)
+    dig %>%
+      group_by(trtmt)%>%
+      summarise(
+        n=n(),
+        events= sum(!!out==1, na.rm = TRUE),
+        rate= events/n,
+        .groups = "drop"
+      )
+  })
+  
+  output$trt_outcome_plot <- renderPlot({
+    df <- summary_data()
+    ggplot(df,aes(x=factor(trtmt),y=rate,fill = factor(trtmt)))+
+      geom_col()+
+      ylim(0,0.6)+
+      labs(
+        x= "Treatment(0=placebo, 1=digoxin)",
+        y= "Event rate(proportion)",
+        fill="Treatment",
+        title = paste("Event Rate by Treatment for",input$outcome_var)
+      )+
+      theme_classic()
+  })
+  
+  output$trt_outcome_summary <- renderTable({
+    summary_data() %>%
+      mutate(rate_percent= round(100*rate,1))
+  })
+}
+
+shinyApp(ui=ui,server=server)
+```
+
