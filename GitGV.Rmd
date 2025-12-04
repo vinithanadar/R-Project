@@ -923,3 +923,105 @@ Interpretation
 According to the data visualisation the events of whf were more common in placebo than than the digoxin treatment group.
 For MI; the event rates are quite low and much similar in both the groups
 Lastly in case of stroke, the events were low and almost equal in both the groups.
+
+
+
+Next Question:
+
+Comparing all the Treatment group of Age,Sex,Race :
+
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(readr)
+library(janitor)
+library(dplyr)
+
+
+
+dig <- read.csv("DIG.csv") %>%
+  janitor::clean_names()
+
+
+ui <- dashboardPage(
+  dashboardHeader(title = "Treatment Comparisons"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("TRMT comparisons", tabName = "treat_compare", icon = icon("chart-bar"))
+      
+    )
+  ),
+  
+  
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "treat_compare",
+        
+        fluidRow(
+          box(width = 4, title = "Age vs Treatment",
+              status = "primary", solidHeader = TRUE,
+              plotOutput("age_treat_plot")),
+          
+          box(width= 4 , title = "Sex vs Treatment", status = "success", solidHeader = TRUE,
+              tableOutput("sex_treat_plot")),
+          
+          box(width = 4, status = "info", solidHeader = TRUE,
+              title = "Race vs Treatment",
+              plotOutput("race_treat_plot"))
+          
+        )
+      )
+    )
+  )
+)
+
+
+server <- function(input, output, session){
+  
+  output$sex_treat_plot <- renderPlot({
+    dig %>%
+      count(trmt,sex)%>%
+      ggplot(aes(x= as.factor(trmt), y = n, fill = as.factor(sex)))+
+      geom_bar(start = "identity", position = "dodge")+
+      labs(title = "Sex distribution by treatment",
+           x ="treatment",
+           y = "count",
+           fill = "sex" ) +
+      theme_minimal()
+  })
+  
+  
+  output$age_treat_plot <- renderPlot({
+    ggplot(dig, aes(x = as.factor(trmt), y= age, fill = as.factor(trmt)))+
+      geom_boxplot() +
+      labs(
+        title = "Age distribution by sex",
+        x = "Treatment(0 = palcebo, 1= digoxin)",
+        y = "age"  )+
+      theme_minimal()
+    
+  })
+ 
+  output$race_treat_plot <- renderPlot({
+    dig %>%
+      count(trmt, race) %>%
+      ggplot(aes(x = as.factor(trmt), y = n, fill = as.factor(race)))+
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(
+        title = "Race distribution by Treatment",
+        x = "Treatment",
+        y = "count",
+        fill = "race" ) +
+      theme_minimal()
+  }) 
+  
+  
+}
+  
+shinyApp(ui,server) 
+
+```
+
