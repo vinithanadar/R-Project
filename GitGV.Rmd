@@ -831,8 +831,9 @@ Interpretation:
 I have created a violin plot to visualise the comparison of BMI vs Diabetes by initially cleaning the data. After the analysis (summarised in the table), the mean BMI is almost the same in both the treatment groups and the median of both is also almost similar.
 Most importantly the patients with or without diabetes have very similar BMI distributions, thus BMI does not differ mucb by the presence or absence of diabetes in the DIF trail dataset.
 
-
+Comparing the treatment with related outcomes
 ```{r}
+#loading the libraries
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
@@ -1025,3 +1026,108 @@ shinyApp(ui,server)
 
 ```
 
+Comparing the digoxin treatment with other continuous parameters
+```{r}
+#loading the different libraries
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+
+#cleaning of the data
+dig <- read.csv("DIG.csv") %>%
+  clean_names()
+
+#creating the dashboard
+ui <- dashboardPage(
+  dashboardHeader(title = "DIG Treatment & continous measures"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Treatment vs parameter",
+               tabName = "trt_parameter",
+               icon=icon("sliders")))),
+  dashboardBody(
+    tabItems(tabItem(
+      tabName = "trt_parameter",
+      fluidRow(
+        box(
+          width = 4, status = "warning",
+          title = "Choose parameter",
+          selectInput(
+            inputId = "cont_var",
+            label = "Continuous variable:",
+            choices = c("Ejection fraction(%)"= "ejf_per",
+                        "Systolic BP(mmHG)"="sysbp",
+                        "Creatinine(mg/dL)"="creat"),
+            selected = "ejf_per")),
+        box(width=8, status = "primary",
+            title = "Distribution by treatment",
+            plotOutput("trt_parameter_plot"))
+      ),
+      fluidRow(
+        box(
+          width = 12,status = "info",
+          title = "Summary by treatment",
+          tableOutput("trt_parameter_summary")
+        )
+      )
+    ))
+  )
+)
+
+server <- function(input,output,session) {
+  #creating labels for the titles
+  pretty_label <- reactive({
+    switch (
+      input$cont_var,
+      ejf_per = "Ejection fraction (%) ",
+      sysbp = "Systolic blood pressure(mmHG) ",
+      creat= "Serum creatinine "
+    )
+  })
+  
+  #making a reactive data with those selected variable 
+  parameter_data <- reactive({
+    dig %>%
+      select(trtmt, !!sym(input$cont_var)) %>%
+      rename(value=!!sym(input$cont_var)) %>%
+      filter(!is.na(value))
+  })
+  
+  output$trt_parameter_plot <- renderPlot({
+    df<- parameter_data()
+    ggplot(df, aes(x=value, fill = factor(trtmt)))+
+      geom_density(alpha=0.4, colour= NA)+
+      facet_wrap(~trtmt, nrow=2, labeller= label_both)+
+      scale_fill_manual(values = c("pink","red"),
+                        name= "Treatment",
+                        labels=c("0=placebo","1=digoxin"))+
+      labs(
+        x=pretty_label(),
+        y="Density",
+        title = paste0(pretty_label(), "by treatment"))+
+      theme_minimal(base_size=13)
+  })
+
+output$trt_parameter_summary <- renderTable({
+  parameter_data() %>%
+    group_by(trtmt) %>%
+    summarise(
+      n=n(),
+      mean= round(mean(value, na.rm=TRUE),1),
+      median= round(median(value, na.rm = TRUE),1),
+      sd = round(sd(value, na.rm=TRUE),1),
+      min= round(min(value, na.rm = TRUE),1),
+      max =round(max(value,na.rm = TRUE),1),
+      .groups = "drop"
+    )
+})
+}
+
+shinyApp(ui = ui, server = server)
+```
+Interpretation:
+The analysis shows that the primary baselines continuous variable that is the SBP, Ejection fraction and creatinine have similar kind of distributions on the plot and the average in both placebo and digoxin group is same too.This indicates that the placebo and digoxin treatment groups were well balanced for these parameters at the baseline itself.
+For doing the above a built a shiny dashboard tab where the user can choose a variable of choice and see the distribution by treatment as a density plot along with a summary table using summary statistics. I have also included a reactive expression to select and rename the variable of choice, then the libraries like ggplot2 and dplyr were used to draw the faceted densities and compute the group-wise summary statistics.
