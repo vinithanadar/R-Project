@@ -1,10 +1,9 @@
 ---
 title: "GitGV"
-output: html_document
+output: 
 ---
 ```{r}
-install.packages("dpylr")
-install.packages("shinydashboard")
+
 library(shinydashboard)
 library(ggplot2)
 library(dplyr)
@@ -13,6 +12,7 @@ library(readr)
 
 ```{r}
 
+library(rsconnect)
 ```
 
 ```{r}
@@ -967,7 +967,7 @@ ui <- dashboardPage(
               plotOutput("age_treat_plot")),
           
           box(width= 4 , title = "Sex vs Treatment", status = "success", solidHeader = TRUE,
-              tableOutput("sex_treat_plot")),
+              plotOutput("sex_treat_plot")),
           
           box(width = 4, status = "info", solidHeader = TRUE,
               title = "Race vs Treatment",
@@ -986,7 +986,7 @@ server <- function(input, output, session){
     dig %>%
       count(trmt,sex)%>%
       ggplot(aes(x= as.factor(trmt), y = n, fill = as.factor(sex)))+
-      geom_bar(start = "identity", position = "dodge")+
+      geom_bar(stat = "identity", position = "dodge")+
       labs(title = "Sex distribution by treatment",
            x ="treatment",
            y = "count",
@@ -1024,6 +1024,9 @@ server <- function(input, output, session){
   
 shinyApp(ui,server) 
 
+```
+```{r}
+names(dig)
 ```
 
 Comparing the digoxin treatment with other continuous parameters
@@ -1131,3 +1134,5 @@ shinyApp(ui = ui, server = server)
 Interpretation:
 The analysis shows that the primary baselines continuous variable that is the SBP, Ejection fraction and creatinine have similar kind of distributions on the plot and the average in both placebo and digoxin group is same too.This indicates that the placebo and digoxin treatment groups were well balanced for these parameters at the baseline itself.
 For doing the above a built a shiny dashboard tab where the user can choose a variable of choice and see the distribution by treatment as a density plot along with a summary table using summary statistics. I have also included a reactive expression to select and rename the variable of choice, then the libraries like ggplot2 and dplyr were used to draw the faceted densities and compute the group-wise summary statistics.
+
+Next question:
