@@ -940,21 +940,19 @@ library(janitor)
 library(dplyr)
 
 
-
-dig <- read.csv("DIG.csv") %>%
-  janitor::clean_names()
-
+dig <- read.csv("DIG.csv")%>%
+  clean_names()
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Treatment Comparisons"),
+  dashboardHeader(title = "Treatment group comparisions"),
   
   dashboardSidebar(
     sidebarMenu(
-      menuItem("TRMT comparisons", tabName = "treat_compare", icon = icon("chart-bar"))
-      
+      menuItem("Treatment comparisions",
+               tabName = "treat_compare",
+               icon = icon("chart-bar"))
     )
   ),
-  
   
   dashboardBody(
     tabItems(
@@ -962,11 +960,13 @@ ui <- dashboardPage(
         tabName = "treat_compare",
         
         fluidRow(
-          box(width = 4, title = "Age vs Treatment",
-              status = "primary", solidHeader = TRUE,
+          
+          box(width = 4, status = "primary", solidHeader = TRUE,
+              title = "Age vs Treatment",
               plotOutput("age_treat_plot")),
           
-          box(width= 4 , title = "Sex vs Treatment", status = "success", solidHeader = TRUE,
+          box(width = 4 , status = "success", solidHeader = TRUE,
+              title = "Sex vs Treatment",
               plotOutput("sex_treat_plot")),
           
           box(width = 4, status = "info", solidHeader = TRUE,
@@ -977,54 +977,62 @@ ui <- dashboardPage(
       )
     )
   )
+  
 )
 
 
 server <- function(input, output, session){
   
-  output$sex_treat_plot <- renderPlot({
-    dig %>%
-      count(trmt,sex)%>%
-      ggplot(aes(x= as.factor(trmt), y = n, fill = as.factor(sex)))+
-      geom_bar(stat = "identity", position = "dodge")+
-      labs(title = "Sex distribution by treatment",
-           x ="treatment",
-           y = "count",
-           fill = "sex" ) +
-      theme_minimal()
-  })
-  
-  
   output$age_treat_plot <- renderPlot({
-    ggplot(dig, aes(x = as.factor(trmt), y= age, fill = as.factor(trmt)))+
+    ggplot(dig,aes(x = factor(trtmt), y = age, fill = factor(trtmt))) +
       geom_boxplot() +
       labs(
-        title = "Age distribution by sex",
-        x = "Treatment(0 = palcebo, 1= digoxin)",
-        y = "age"  )+
+        title = "Age Distribution by Treatment",
+        x = "Treatment (0 = Placebo, 1 = Digoxin)",
+        y = "age"
+      ) +
       theme_minimal()
-    
   })
- 
-  output$race_treat_plot <- renderPlot({
-    dig %>%
-      count(trmt, race) %>%
-      ggplot(aes(x = as.factor(trmt), y = n, fill = as.factor(race)))+
+  
+  output$sex_treat_plot <- renderPlot({
+    dig %>% 
+      count(trtmt, sex) %>%
+      ggplot(aes(x = factor(trtmt), y = n, fill = factor(sex))) +
       geom_bar(stat = "identity", position = "dodge") +
       labs(
-        title = "Race distribution by Treatment",
+        title = "Sex Distribution by Treatment",
         x = "Treatment",
         y = "count",
-        fill = "race" ) +
+        fill = "Sex(1 = Male, 2 = Female)"
+      )+
       theme_minimal()
-  }) 
+  })
+  
+  
+  
+  output$race_treat_plot <- renderPlot({
+    dig %>%
+      count(trtmt, race) %>%
+      ggplot(aes(x = factor(trtmt), y= n, fill = factor(race))) +
+      geom_bar(stat = "identity", position =  "dodge") +
+      labs(
+        title = "Race Distribution by Treatment",
+        x = "Treatment",
+        y = "Count",
+        fill = "Race(1 = White, 2 = Non-white)"
+      ) +
+      theme_minimal()
+  })
+  
   
   
 }
-  
-shinyApp(ui,server) 
+
+shinyApp(ui, server)
 
 ```
+
+
 ```{r}
 names(dig)
 ```
