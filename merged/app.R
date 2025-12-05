@@ -7,7 +7,7 @@ library(janitor)
 library(scales)
 
 
-dig <- read_csv("DIG.csv") %>% clean_names()
+dig <- read_csv("https://raw.githubusercontent.com/vinithanadar/R-Project/refs/heads/main/merged/DIG.csv") %>% clean_names()
 
 # Add age group column (used in multiple sections)
 
